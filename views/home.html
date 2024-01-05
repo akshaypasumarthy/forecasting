@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="/css/style.css" />
+    <title>Forecasting</title>
+  </head>
+  <body>
+    <button class="btn btn-primary" onclick="display()">add</button>
+    <div id="tableContainer">
+      <table class="table table-bordered" id="table" style="visibility: hidden">
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Gender</th>
+            <th>Age</th>
+            <th>2019</th>
+            <th>2020</th>
+            <th>2021</th>
+            <th>2022</th>
+            <th>2023</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot style="visibility: visible">
+          <tr>
+            <th colspan="3">Grand Total</th>
+            <th>
+              <input type="number" class="form-control" value="0" id="grandTotal2019" />
+            </th>
+            <th>
+              <input type="number" class="form-control" value="0" id="grandTotal2020" />
+            </th>
+            <th>
+              <input type="number" class="form-control" value="0" id="grandTotal2021" />
+            </th>
+            <th>
+              <input type="number" class="form-control" value="0" id="grandTotal2022" />
+            </th>
+            <th>
+              <input type="number" class="form-control" value="0" id="grandTotal2023" />
+            </th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <script>
+      let count = 0;
+      var mainid = "";
+      let countryCounts = {};
+
+      function display() {
+        var tableContainer = document.getElementById("tableContainer");
+        var table = document.getElementById("table");
+        age = ["20-40", "40-60", "60-80"];
+        years = ["2019", "2020", "2021", "2022", "2023"];
+        if (count == 0) {
+          table.style.visibility = "visible";
+        }
+        count = count + 1;
+        var currentCount = count;
+
+        for (var i = 0; i < 3; i++) {
+          var newRow = table.tBodies[0].insertRow();
+          addCell(newRow, "Country" + currentCount);
+          addCell(newRow, "Male");
+          addCell(newRow, age[i]);
+
+          for (var j = 0; j < 5; j++) {
+            var inputCell = newRow.insertCell();
+            var inputField = document.createElement("input");
+            inputField.type = "number";
+            inputField.value = 0;
+            inputField.className = "form-control";
+            inputField.dataset.count = currentCount;
+            inputField.addEventListener("click", function () {
+              submitForm();
+              captureData(this);
+            });
+            inputCell.appendChild(inputField);
+          }
+        }
+        addTotalRow(table.tBodies[0], "Male Total");
+
+        for (var i = 0; i < 3; i++) {
+          var newRow = table.tBodies[0].insertRow();
+          addCell(newRow, "Country" + currentCount);
+          addCell(newRow, "Female");
+          addCell(newRow, age[i]);
+
+          for (var j = 0; j < 5; j++) {
+            var inputCell = newRow.insertCell();
+            var inputField = document.createElement("input");
+            inputField.type = "number";
+            inputField.value = 0;
+            inputField.className = "form-control";
+            inputField.dataset.count = currentCount;
+            inputField.addEventListener("click", function () {
+              submitForm();
+              captureData(this);
+            });
+            inputCell.appendChild(inputField);
+          }
+        }
+
+        addTotalRow(table.tBodies[0], "Female Total");
+        addTotalRow(table.tBodies[0], "Country" + currentCount + " Total");
+        tableContainer.appendChild(table);
+        countryCounts["Country" + currentCount] = {
+          male: { 2019: 0, 2020: 0, 2021: 0, 2022: 0, 2023: 0 },
+          female: { 2019: 0, 2020: 0, 2021: 0, 2022: 0, 2023: 0 },
+        };
+      }
+
+      function addTotalRow(tbody, label) {
+        var newRow = tbody.insertRow();
+        var totalCell = newRow.insertCell();
+        var strongElement = document.createElement("strong");
+        strongElement.textContent = label;
+        totalCell.appendChild(strongElement);
+        totalCell.setAttribute("colspan", "3");
+        for (var j = 0; j < 5; j++) {
+          var inputCell = newRow.insertCell();
+          var inputField = document.createElement("input");
+          inputField.type = "number";
+          inputField.value = 0;
+          inputField.className = "form-control";
+          inputField.id = "country " + count + " " + label + years[j];
+          console.log(inputField.id);
+          inputField.dataset.count = count;
+          inputField.addEventListener("click", function () {
+            submitForm();
+            captureData(this);
+          });
+          inputField.addEventListener("change", function () {
+            change();
+            //change1();
+          });
+          inputField.addEventListener("mouseleave", function () {
+            
+            change1();
+          });
+          inputCell.appendChild(inputField);
+        }
+      }
+
+      function captureData(inputField) {
+        var tableRow = inputField.closest("tr");
+        var country = tableRow.cells[0].textContent;
+        var gender = tableRow.cells[1].textContent;
+        var age = tableRow.cells[2].textContent;
+        var count = inputField.dataset.count;
+        console.log("Country:",country, "Gender:",gender,"Age:",age,"Count:",count);
+      }
+
+      function addCell(row, text) {
+        var cell = row.insertCell();
+        cell.textContent = text;
+      }
+
+      function submitForm() {
+        ADD();
+      }
+
+      function change() {
+        for (var i = 2019; i <= 2023; i++) {
+          updateMaleValues(i);
+          updateFemaleValues(i);
+        }        
+      }
+      function change1(){
+        for (var i = 2019; i <= 2023; i++) {
+          updateCountryValue(i);
+        } 
+      }
+
+      function ADD() {
+        var table = document.getElementById("table");
+        var dataByCountry = {};
+        var grandTotal = { 2019: 0, 2020: 0, 2021: 0, 2022: 0, 2023: 0 };
+        var rows = table.tBodies[0].rows;
+        var rows_length = rows.length;
+        for (var i = 0; i < rows_length; i++) {
+          var cells = rows[i].cells;
+          if (cells[0].tagName === "th" || cells[0].hasAttribute("colspan")) {
+            continue;
+          }
+          var count = cells[3].querySelector("input").dataset.count;
+          var countryTotal = { 2019: 0, 2020: 0, 2021: 0, 2022: 0, 2023: 0 };
+          var country = cells[0].textContent;
+          if (!dataByCountry[country]) {
+            dataByCountry[country] = { male: {}, female: {} };
+            for (var year of years) {
+              dataByCountry[country].male[year] = [];
+              dataByCountry[country].female[year] = [];
+            }
+          }
+          var gender = cells[1].textContent;
+          for (var j = 3; j < 8; j++) {
+            var value = parseFloat(cells[j].querySelector("input").value);
+            var year = years[j - 3];
+            if (gender === "Male") {
+              dataByCountry[country].male[year].push(value);
+            } else if (gender === "Female") {
+              dataByCountry[country].female[year].push(value);
+            }
+            grandTotal[year] += value;
+          }
+          for (var year in dataByCountry[country].male) {
+            var maleSum = dataByCountry[country].male[year].reduce((acc, val) => acc + val,0);
+            countryTotal[year] += maleSum;
+            var maletotalId = "country " + count + " " + "Male Total" + year;
+            document.getElementById(maletotalId).value = maleSum;
+          }
+          for (var year in dataByCountry[country].female) {
+            var femaleSum = dataByCountry[country].female[year].reduce((acc, val) => acc + val,0 );
+            countryTotal[year] += femaleSum;
+            var femaletotalId ="country " + count + " " + "Female Total" + year;
+            document.getElementById(femaletotalId).value = femaleSum;
+          }
+          for (var year in countryTotal) {
+            var totalId ="country " + count + " Country" + count + " Total" + year;
+            document.getElementById(totalId).value = countryTotal[year];
+          }
+        }
+        for (var year in grandTotal) {
+          var grandTotalId = "grandTotal" + year;
+          document.getElementById(grandTotalId).value = grandTotal[year];
+        }
+      }
+
+      function updateMaleValues(year) {
+        var table = document.getElementById("table");
+        var rows = table.tBodies[0].rows;
+        var hasData = false;
+        for (var i = 0; i < rows.length; i++) {
+          var cells = rows[i].cells;
+          if ( cells[0].tagName !== "th" && !cells[0].hasAttribute("colspan") && cells[1].textContent === "Male"
+          ) {
+            var maleInput = cells[3 + (year - 2019)].querySelector("input");
+            if (parseFloat(maleInput.value) !== 0) {
+              hasData = true;
+              break;
+            }
+          }
+        }
+
+        if (hasData) {
+          var existingMaleSum = 0;
+          for (var i = 0; i < rows.length; i++) {
+            var cells = rows[i].cells;
+            if ( cells[0].tagName === "th" || cells[0].hasAttribute("colspan") || cells[1].textContent != "Male") {
+              continue;
+            }
+            existingMaleSum += parseFloat(cells[3 + (year - 2019)].querySelector("input").value);
+          }
+          var newTotal = parseFloat(document.getElementById("country " + 1 + " " + "Male Total" + year).value);
+
+          console.log(existingMaleSum,newTotal)
+          for (var i = 0; i < rows.length; i++) {
+            var cells = rows[i].cells;
+            if ( cells[0].tagName === "th" || cells[0].hasAttribute("colspan") || cells[1].textContent != "Male") {
+              continue;
+            }
+            var maleInput = cells[3 + (year - 2019)].querySelector("input");
+
+            console.log(maleInput)
+            console.log(maleInput.value)
+            
+            maleInput.value = ((parseFloat(maleInput.value) / existingMaleSum) *newTotal).toFixed(2);
+            console.log(maleInput.value)
+            console.log(document.getElementById("country " + 1 + " " + "Country1 Total" + year).value)
+          }
+        } else {
+          console.log("No data for the year " + year);
+        }
+      }
+
+      function updateFemaleValues(year) {
+        var table = document.getElementById("table");
+        var rows = table.tBodies[0].rows;
+        var hasData = false;
+        for (var i = 0; i < rows.length; i++) {
+          var cells = rows[i].cells;
+          if ( cells[0].tagName !== "th" && !cells[0].hasAttribute("colspan") && cells[1].textContent === "Female"
+          ) {
+            var femaleInput = cells[3 + (year - 2019)].querySelector("input");
+            if (parseFloat(femaleInput.value) !== 0) {
+              hasData = true;
+              break;
+            }
+          }
+        }
+        if (hasData) {
+          var existingFemaleSum = 0;
+          for (var i = 0; i < rows.length; i++) {
+            var cells = rows[i].cells;
+            if ( cells[0].tagName === "th" || cells[0].hasAttribute("colspan") || cells[1].textContent != "Female") {
+              continue;
+            }
+            existingFemaleSum += parseFloat(cells[3 + (year - 2019)].querySelector("input").value);
+          }
+          var newTotal_female = parseFloat(document.getElementById( "country " + 1 + " " + "Female Total" + year).value);
+          for (var i = 0; i < rows.length; i++) {
+            var cells = rows[i].cells;
+            if (cells[0].tagName === "th" ||cells[0].hasAttribute("colspan") ||cells[1].textContent != "Female") {
+              continue;
+            }
+            var femaleInput = cells[3 + (year - 2019)].querySelector("input");
+            femaleInput.value = ((parseFloat(femaleInput.value) / existingFemaleSum) *newTotal_female).toFixed(2);
+          }
+        } else {
+          console.log("No data for the year " + year);
+        }
+      }
+
+      function updateCountryValue(year) {
+        var table = document.getElementById("table");
+        var rows = table.tBodies[0].rows;
+
+        var newTotal = parseFloat(
+          document.getElementById("country 1 Country1 Total"+year).value
+        );
+
+        var existingMaleTotal = parseFloat(
+          document.getElementById("country 1 Male Total"+year).value
+        );
+        var existingFemaleTotal = parseFloat(
+          document.getElementById("country 1 Female Total"+year).value
+        );
+
+        var maleRatio =existingMaleTotal /(existingMaleTotal + existingFemaleTotal);
+        var femaleRatio =existingFemaleTotal /(existingMaleTotal + existingFemaleTotal);
+
+        for (var i = 0; i < rows.length; i++) {
+          var cells = rows[i].cells;
+          if (cells[0].tagName === "th" || cells[0].hasAttribute("colspan")) {
+            continue;
+          }
+          var newmaletotalvalue = newTotal * maleRatio;
+          var newfemaletotalvalue = newTotal * femaleRatio;
+
+          if(existingFemaleTotal!=newfemaletotalvalue){
+            document.getElementById("country 1 Female Total"+year).innerText = newfemaletotalvalue
+          }
+          if(existingMaleTotal!=newmaletotalvalue){
+            document.getElementById("country 1 Male Total"+year).innerText = newmaletotalvalue
+          }
+
+          console.log( document.getElementById("country 1 Female Total"+year), document.getElementById("country 1 Male Total"+year))
+          if (true) {
+            var table = document.getElementById("table");
+            var rows = table.tBodies[0].rows;
+            var hasData = false;
+            for (var i = 0; i < rows.length; i++) {
+              var cells = rows[i].cells;
+              if ( cells[0].tagName !== "th" && !cells[0].hasAttribute("colspan") && cells[1].textContent === "Female") {
+                var femaleInput = cells[3+(year-2019)].querySelector("input");
+                if (parseFloat(femaleInput.value) !== 0) {
+                  hasData = true;
+                  break;
+                }
+              }
+            }
+            if (hasData) {
+              var existingFemaleSum = 0;
+              for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].cells;
+                if (cells[0].tagName === "th" || cells[0].hasAttribute("colspan") || cells[1].textContent != "Female") {
+                  continue;
+                }
+                existingFemaleSum += parseFloat(cells[3+(year-2019)].querySelector("input").value );
+              }
+              var newTotal_female = newfemaletotalvalue;
+              
+              for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].cells;
+                if ( cells[0].tagName === "th" || cells[0].hasAttribute("colspan") || cells[1].textContent != "Female") {
+                  continue;
+                }
+                var femaleInput = cells[3+(year-2019)].querySelector("input");
+                femaleInput.value = ((parseFloat(femaleInput.value) / existingFemaleSum) * newTotal_female).toFixed(2);
+              }
+            } else {
+              console.log("No data for the year ");
+            }
+          }
+
+          if (true) {
+            var table = document.getElementById("table");
+            var rows = table.tBodies[0].rows;
+            var hasData = false;
+            for (var i = 0; i < rows.length; i++) {
+              var cells = rows[i].cells;
+              if (cells[0].tagName !== "th" && !cells[0].hasAttribute("colspan") && cells[1].textContent === "Male") {
+                var maleInput = cells[3+(year-2019)].querySelector("input");
+                if (parseFloat(maleInput.value) !== 0) {
+                  hasData = true;
+                  break;
+                }
+              }
+            }
+            if (hasData) {
+              var existingMaleSum = 0;
+              for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].cells;
+                if (cells[0].tagName === "th" || cells[0].hasAttribute("colspan") || cells[1].textContent != "Male") {
+                  continue;
+                }
+                existingMaleSum += parseFloat(cells[3+(year-2019)].querySelector("input").value);
+              }
+              var newTotal_male = newmaletotalvalue;
+              for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].cells;
+                if ( cells[0].tagName === "th" ||  cells[0].hasAttribute("colspan") ||  cells[1].textContent != "Male") {
+                  continue;
+                }
+                var maleInput = cells[3+(year-2019)].querySelector("input");
+                maleInput.value = ((parseFloat(maleInput.value) / existingMaleSum) *newTotal_male).toFixed(2);
+              }
+            } else {
+              console.log("No data for the year ");
+            }
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
